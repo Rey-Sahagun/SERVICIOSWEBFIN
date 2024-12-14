@@ -29,7 +29,7 @@ const deleteProduct = async (_id) => {
     await facturapi.deleteProduct(facturapiId);
     // return true;
     return Product.findByIdAndDelete(_id);
-}
+}  
 
 module.exports = {
     getAllProducts,

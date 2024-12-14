@@ -128,8 +128,8 @@ const closeCart = async (cartId) => {
                 product: producto.producto.facturapiId,
                 quantity: producto.cantidad
             })),
-            payment_form: '01',
-            use: 'G01'
+            payment_form: '01', // Forma de pago: Efectivo
+            use: 'G01' // Uso del CFDI: General de gastos
         };
 
         console.log("FacturAPI Payload:", facturaApiPayload);
@@ -264,7 +264,7 @@ const updateProductQuantityInCart = async (cartId, productId, cantidad) => {
 };
 
 const calculateCartTotals = async (cartId) => {
-    const ivaRate = 0.10;
+    const ivaRate = 0.16; // Tasa de IVA
 
     const cart = await CartModel.findById(cartId)
         .populate('productos.producto')
@@ -280,7 +280,9 @@ const calculateCartTotals = async (cartId) => {
         const producto = item.producto;
 
         if (producto && producto.price && item.cantidad) {
-            subtotal += producto.price * item.cantidad; 
+            // Calcula el precio base sin IVA
+            const basePrice = producto.price / (1 + ivaRate);
+            subtotal += basePrice * item.cantidad;
         } else {
             console.log("Producto sin precio o cantidad no válida:", producto);
         }
@@ -289,9 +291,9 @@ const calculateCartTotals = async (cartId) => {
     const iva = subtotal * ivaRate;
     const total = subtotal + iva;
 
-    cart.subtotal = subtotal.toFixed(2);
-    cart.iva = iva.toFixed(2);
-    cart.total = total.toFixed(2);
+    cart.subtotal = subtotal.toFixed(2); // Subtotal sin IVA
+    cart.iva = iva.toFixed(2); // IVA calculado
+    cart.total = total.toFixed(2); // Total (Subtotal + IVA)
 
     await cart.save();
 
